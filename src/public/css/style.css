@@ -30,3 +30,15 @@ body {
 .create-user label {
     display: block;
 }
+
+.update-user {
+    padding: 15px;
+}
+
+.update-user label {
+    display: block;
+}
+
+.btn-save {
+    margin-top: 15px;
+}
