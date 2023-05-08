@@ -1,6 +1,6 @@
 import express from "express";
 import homeController from "../controller/homeController";
-import multer from "multer";
+import multer, { MulterError } from "multer";
 import path from "path";
 var appRoot = require("app-root-path");
 const storage = multer.diskStorage({
@@ -25,7 +25,10 @@ const imageFilter = function (req, file, cb) {
   cb(null, true);
 };
 const upload = multer({ storage: storage, fileFilter: imageFilter });
-
+const uploadMultiple = multer({
+  storage: storage,
+  fileFilter: imageFilter,
+}).array("multiple-images", 3);
 const router = express.Router();
 const initWebRouter = (app) => {
   router.get("/", homeController.getHomePage);
@@ -35,6 +38,24 @@ const initWebRouter = (app) => {
   router.get("/edit-user/:id", homeController.getEditUser);
   router.post("/update-user", homeController.updateUser);
   router.get("/upload", homeController.uploadFile);
+  router.post(
+    "/upload-multiple-file",
+    (req, res, next) => {
+      uploadMultiple(req, res, (err) => {
+        if (
+          err instanceof multer.MulterError &&
+          err.code === "LIMIT_UNEXPECTED_FILE"
+        ) {
+          res.send("LIMIT_FILE");
+        } else if (err) {
+          res.send(err);
+        } else {
+          next();
+        }
+      });
+    },
+    homeController.handleUploadMultipleFile
+  );
   router.post(
     "/upload-profile-pic",
     upload.single("profile_pic"),
